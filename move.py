@@ -4,6 +4,7 @@ import time
 import requests
 from config import BEARER_TOKEN, TIMEOUT, PERSONNAGE, API_URL
 from get_map_tile_coord import get_map_tile_coord
+from request_helper import RequestHelper
 
 def move(coord):
     """move the perso at the coord
@@ -26,5 +27,10 @@ def move(coord):
     print(f'Vous êtes arrivez a {destination}')
     time.sleep(data['data']['cooldown']['total_seconds'])
 
+def move_hero_to(hero: str, x: int, y: int) -> object:
+    result = RequestHelper.post_action(hero.name, 'move', {'x': x, 'y': y})
+    if result is not None:
+        hero.update_hero(result['character'])
+    return hero
 
 move(get_map_tile_coord())

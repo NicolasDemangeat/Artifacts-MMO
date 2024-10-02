@@ -5,8 +5,6 @@
 """
 import requests
 
-from dotenv import load_dotenv
-
 def get_map_tile_coord(content_type = 'bank', content_code = 'bank'):
     """The first parameter is this type of what you want
     The second parameter is the exact code of what you want
@@ -26,8 +24,6 @@ def get_map_tile_coord(content_type = 'bank', content_code = 'bank'):
     Returns:
         _dict_: {'x':item['x'], 'y':item['y']}
     """
-    # Charger les variables d'environnement depuis le fichier .env
-    load_dotenv()
 
     url = "https://api.artifactsmmo.com/maps"
 

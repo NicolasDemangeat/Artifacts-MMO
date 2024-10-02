@@ -1,5 +1,5 @@
-"""config file with all the constante
-"""
+"""config file with all the constante"""
+
 import os
 from dotenv import load_dotenv
 
