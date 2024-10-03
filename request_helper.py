@@ -1,7 +1,7 @@
 """This module contains the RequestHelper class for interacting with the Artifacts MMO API."""
 import json
+from typing import Dict, List, Any
 import requests
-
 
 from config import BEARER_TOKEN, TIMEOUT, API_URL #https://api.artifactsmmo.com
 
@@ -27,17 +27,18 @@ class RequestHelper:
         return f"{API_URL}{uri}"
 
     @staticmethod
-    def __request(uri: str, method: str, data: dict[str, any] = None) -> list[dict[str, any]]:
+    def __request(uri: str, method: str, data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         url = RequestHelper.__make_url(uri)
         headers = {
             'Accept': 'application/json',
             'Authorization': f'Bearer {BEARER_TOKEN}'
         }
+        print(json.dumps(data))
         if method == "POST":
             headers['Content-Type'] = 'application/json'
             response = requests.post(url, headers=headers, data=json.dumps(data), timeout=TIMEOUT)
         elif method == "GET":
-            response = requests.get(url, headers=headers, timeout=TIMEOUT)
+            response = requests.get(url, headers=headers, params=json.dumps(data), timeout=TIMEOUT)
         else:
             raise ValueError(f"Invalid method: {method}")
 
@@ -50,30 +51,32 @@ class RequestHelper:
         return data['data']
 
     @staticmethod
-    def __post(uri: str, data: dict[str, any] = None) -> list[dict[str, any]]:
+    def __post(uri: str, data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        print(uri)
         return RequestHelper.__request(uri, "POST", data)
 
     @staticmethod
-    def __get(uri: str) -> list[dict[str, any]]:
-        return RequestHelper.__request(uri, "GET")
+    def __get(uri: str, data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        return RequestHelper.__request(uri, "GET", data)
 
     @staticmethod
-    def post_action(hero_name: str, action: str, data: dict[str, any]=None) -> list[dict[str, any]]:
+    def post_action(hero_name: str, action: str, data: Dict[str, Any]=None) -> List[Dict[str, Any]]:
         """send a POST request to make an action
 
         Args:
             hero_name (str): one of your hero name
             action (str): the action verb
                 (visit : https://api.artifactsmmo.com/docs for the end point)
-            data (dict, optional): the data neded for some request. Defaults to None.
+            data (Dict, optional): the data neded for some request. Defaults to None.
 
         Returns:
-            list: contain the response data
+            List: contain the response data
         """
-        return RequestHelper.__post(f'/my/{hero_name}/actions/{action}', data)
+        print(data)
+        return RequestHelper.__post(f'/my/{hero_name}/action/{action}', data)
 
     @staticmethod
-    def get_infos(info: str, subinfos: str='') -> list[dict[str, any]]: 
+    def get_infos(info: str, subinfos: str='', data: Dict[str, Any]=None) -> List[Dict[str, Any]]:
         """send a GET request to get infos
 
         Args:
@@ -81,10 +84,37 @@ class RequestHelper:
             subinfos (str, optional): The keyword for the infos. Defaults to ''.
 
         Returns:
-            list: contain the response data
+            List: contain the response data
         """
-        return (RequestHelper.__get(f'/my/{info}/{subinfos}')
+        return (RequestHelper.__get(f'/my/{info}/{subinfos}', data)
                 if subinfos != ''
-                else RequestHelper.__get(f'/my/{info}'))
+                else RequestHelper.__get(f'/my/{info}', data))
 
-print(RequestHelper.get_infos('bank', 'items'))
+    @staticmethod
+    def get_map_tile_coord(content_type: str = 'bank', content_code: str = ''):
+        """This method return the coord of a tile on the map
+        The first parameter is this type of what you want
+        The second parameter is the exact code of what you want
+
+        Args:
+            content_type (_string_): Type of content on the map.
+            Allowed values:
+            monster
+            resource
+            workshop
+            bank
+            grand_exchange
+            tasks_master
+
+            content_code (_string_): Match pattern: ^[a-zA-Z0-9_-]+$
+
+        Returns:
+            _dict_: {'x':item['x'], 'y':item['y']}
+        """
+
+        url = "https://api.artifactsmmo.com/maps"
+
+        querystring = {"content_type": content_type, "content_code": content_code, "size": 100}
+
+        data = RequestHelper.__get(url, querystring)
+        return {'x': data[0]['x'], 'y': data[0]['y']}

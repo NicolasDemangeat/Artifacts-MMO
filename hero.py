@@ -1,7 +1,7 @@
 """Module providing a class to instance a character."""
 
-from config import BEARER_TOKEN, TIMEOUT, API_URL
-import requests
+from typing import Dict, List, Any
+from request_helper import RequestHelper
 
 class Hero:
     """Character base class.
@@ -15,13 +15,38 @@ class Hero:
         methode1(param1, param2): Brève description de methode1.
         methode2(param): Brève description de methode2.
     """
-    URL = API_URL
-    TOKEN = BEARER_TOKEN
-    TIMEOUT = TIMEOUT
-    def __init__(self, name):
+    def __init__(self, name: str):
         """Init of Character.
 
         Args:
             name (string): The name of the character the player want to play.
         """
         self.name = name
+
+    def make_action(self, action: str,  data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
+        """Perform an action with this Hero
+
+        Args:
+            action (str): The action verb
+            data (Dict[str, Any], optional): some data if needed. Defaults to None.
+
+        Returns:
+            List[Dict[str, Any]]: The response data
+        """
+        print(data)
+        return RequestHelper.post_action(self.name, action, data)
+
+    def search_infos(self, first_info: str, second_info: str = '') -> List[Dict[str, Any]]:
+        """search for some infos on this hero
+
+        Args:
+            first_info (str): can be :
+            -logs
+            -characters
+            -bank
+            second_info (str): can only be 'items' when first_info is 'bank'
+
+        Returns:
+            List[Dict[str, Any]]: The response data
+        """
+        return RequestHelper.get_infos(first_info, second_info)
