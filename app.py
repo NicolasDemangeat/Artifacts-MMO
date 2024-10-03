@@ -11,4 +11,11 @@ class ApplicationController:
     def start(self):
         """define your gameplay loop here"""
         hero = Hero('Darwin')
-        hero.make_action('bank/deposit', {"code": "copper", "quantity": 10})
+        while True:
+            hero.move_to('copper')
+            for i in range(80):
+                hero.make_action('gathering')
+            hero.move_to('mining')
+            hero.make_action('crafting', {'code': 'copper', 'quantity':10})
+            hero.move_to('bank')
+            hero.make_action('bank/deposit', {"code": "copper", "quantity": 10})

@@ -1,6 +1,7 @@
 """This module contains the RequestHelper class for interacting with the Artifacts MMO API."""
 import json
 from typing import Dict, List, Any
+from time import sleep
 import requests
 
 from config import BEARER_TOKEN, TIMEOUT, API_URL #https://api.artifactsmmo.com
@@ -33,7 +34,6 @@ class RequestHelper:
             'Accept': 'application/json',
             'Authorization': f'Bearer {BEARER_TOKEN}'
         }
-        print(json.dumps(data))
         if method == "POST":
             headers['Content-Type'] = 'application/json'
             response = requests.post(url, headers=headers, data=json.dumps(data), timeout=TIMEOUT)
@@ -43,16 +43,14 @@ class RequestHelper:
             raise ValueError(f"Invalid method: {method}")
 
         if response.status_code != 200:
-            raise requests.RequestException(
-                f"Request {url} failed: {response.status_code}, {response.text}"
-                )
+            return response.status_code
 
         data = response.json()
+        sleep(data['data']['cooldown']['total_seconds'])
         return data['data']
 
     @staticmethod
     def __post(uri: str, data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
-        print(uri)
         return RequestHelper.__request(uri, "POST", data)
 
     @staticmethod
@@ -72,7 +70,6 @@ class RequestHelper:
         Returns:
             List: contain the response data
         """
-        print(data)
         return RequestHelper.__post(f'/my/{hero_name}/action/{action}', data)
 
     @staticmethod
@@ -91,30 +88,23 @@ class RequestHelper:
                 else RequestHelper.__get(f'/my/{info}', data))
 
     @staticmethod
-    def get_map_tile_coord(content_type: str = 'bank', content_code: str = ''):
+    def get_map_tile_coord(content_code: str):
         """This method return the coord of a tile on the map
-        The first parameter is this type of what you want
-        The second parameter is the exact code of what you want
+        The first parameter is the exact code of what you want
+        The second parameter is this type of what you want
 
         Args:
-            content_type (_string_): Type of content on the map.
-            Allowed values:
-            monster
-            resource
-            workshop
-            bank
-            grand_exchange
-            tasks_master
-
             content_code (_string_): Match pattern: ^[a-zA-Z0-9_-]+$
+            content_type (_string_): Type of content on the map.
 
         Returns:
             _dict_: {'x':item['x'], 'y':item['y']}
         """
 
         url = "https://api.artifactsmmo.com/maps"
+        querystring = {"content_code": content_code, "size": 100}
+        headers = {"Accept": "application/json"}
+        response = requests.get(url, headers=headers, params=querystring, timeout=TIMEOUT)
 
-        querystring = {"content_type": content_type, "content_code": content_code, "size": 100}
-
-        data = RequestHelper.__get(url, querystring)
+        data = response.json()['data']
         return {'x': data[0]['x'], 'y': data[0]['y']}

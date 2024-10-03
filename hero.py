@@ -23,6 +23,20 @@ class Hero:
         """
         self.name = name
 
+    def move_to(self, content_code: str):
+        """Move the hero
+
+        Args:
+            content_code (_string_): Match pattern: ^[a-zA-Z0-9_-]+$
+
+        Returns:
+            _type_: _description_
+        """
+        return self.make_action(
+            'move',
+            RequestHelper.get_map_tile_coord(content_code)
+            )
+
     def make_action(self, action: str,  data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Perform an action with this Hero
 
@@ -33,7 +47,6 @@ class Hero:
         Returns:
             List[Dict[str, Any]]: The response data
         """
-        print(data)
         return RequestHelper.post_action(self.name, action, data)
 
     def search_infos(self, first_info: str, second_info: str = '') -> List[Dict[str, Any]]:
