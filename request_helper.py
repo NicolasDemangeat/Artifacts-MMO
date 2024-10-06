@@ -1,5 +1,6 @@
 """This module contains the RequestHelper class for interacting with the Artifacts MMO API."""
 import json
+import base64
 from typing import Dict, List, Any
 from time import sleep
 import requests
@@ -108,3 +109,49 @@ class RequestHelper:
 
         data = response.json()['data']
         return {'x': data[0]['x'], 'y': data[0]['y']}
+
+    @staticmethod
+    def create_account(username: str, password: str, email: str):
+        """This method create an account, generate token, and return the token
+
+        Args:
+            username (_string_): the username for the account
+            password (_string_): Password for the account
+            email (_string_): user email
+
+        Returns:
+            _string_: Bearrer token
+        """
+
+        url = "https://api.artifactsmmo.com/accounts/create"
+        payload = {
+            "username": username,
+            "password": password,
+            "email": email
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json"
+        }
+
+        response = requests.post(url, json=payload, headers=headers, timeout=TIMEOUT)
+
+        url = "https://api.artifactsmmo.com/token"
+        # Encodage des identifiants en Base64 pour l'authentification Basic
+        credentials = f"{username}:{password}"
+        encoded_credentials = base64.b64encode(credentials.encode()).decode()
+
+        headers = {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "Authorization": f"Basic {encoded_credentials}"
+        }
+
+        # Vérification de la réponse
+        if response.status_code == 200:
+            token = response.json()["token"]
+            print(f"Token généré avec succès : {token}")
+            return token
+        else:
+            print(f"Erreur lors de la génération du token : {response.status_code}")
+            print(response.json())
