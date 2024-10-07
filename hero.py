@@ -32,10 +32,9 @@ class Hero:
         Returns:
             _type_: _description_
         """
-        return self.make_action(
-            'move',
-            RequestHelper.get_map_tile_coord(content_code)
-            )
+        coord = RequestHelper.get_map_tile_coord(content_code)
+
+        return self.make_action('move', coord)
 
     def make_action(self, action: str,  data: Dict[str, Any] = None) -> List[Dict[str, Any]]:
         """Perform an action with this Hero
